@@ -1,0 +1,169 @@
+// The datasource block defines the database connection.
+datasource db {
+  provider = "postgresql"  // You are using PostgreSQL
+  url      = env("DATABASE_URL")  // The connection string comes from the .env file
+}
+
+// The generator block specifies the Prisma Client to be used.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Store table
+model Store {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  logoUrl     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  users       User[]
+  products    Product[]
+  categories  Category[]
+  orders      Order[]
+  carts       Cart[]    // Add this line
+}
+
+// User table
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  firstName String
+  lastName  String
+  role      Role      @default(customer)
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  storeId   Int?
+  store     Store?    @relation(fields: [storeId], references: [id])
+  orders    Order[]
+  cart      Cart?     // Remove unique constraint for one-to-many
+}
+
+enum Role {
+  customer
+  admin
+  store_owner
+}
+
+// Category table
+model Category {
+  id          Int       @id @default(autoincrement())
+  storeId     Int
+  name        String
+  description String?
+  parentId    Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  store       Store     @relation(fields: [storeId], references: [id])
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+}
+
+// Product table
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  stock       Int       @default(0)
+  imageUrl    String?
+  storeId     Int
+  categoryId  Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  store       Store     @relation(fields: [storeId], references: [id])
+  category    Category  @relation(fields: [categoryId], references: [id])
+  cartItems   CartItem[] // Added relation
+  orderItems  OrderItem[] // Added relation
+}
+
+model Cart {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique  // Add @unique here
+  storeId   Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+  store     Store     @relation(fields: [storeId], references: [id])
+  cartItems CartItem[]
+}
+
+// CartItem table
+model CartItem {
+  id        Int       @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  cart      Cart      @relation(fields: [cartId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+}
+
+// Order table
+model Order {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  storeId       Int
+  status        OrderStatus @default(pending)
+  total         Float
+  shippingAddress String?
+  billingAddress String?
+  paymentStatus PaymentStatus @default(pending)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id])
+  store         Store     @relation(fields: [storeId], references: [id])
+  orderItems    OrderItem[]
+  payments      Payment[] // Add this line
+}
+
+enum OrderStatus {
+  pending
+  paid
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+}
+
+// OrderItem table
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  order     Order     @relation(fields: [orderId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+}
+
+// Payment table
+model Payment {
+  id            Int        @id @default(autoincrement())
+  orderId       Int
+  paymentMethod PaymentMethod
+  amount        Float
+  transactionId String?
+  status        PaymentStatus @default(pending)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  order         Order      @relation(fields: [orderId], references: [id])
+}
+
+enum PaymentMethod {
+  credit_card
+  paypal
+  bank_transfer
+}
