@@ -72,7 +72,7 @@ export default function CartPage() {
           </div>
           <button
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition"
-            onClick={() => (window.location.href = "/home")}
+            onClick={() => (window.location.href = "/")}
           >
             Continue Shopping
           </button>
