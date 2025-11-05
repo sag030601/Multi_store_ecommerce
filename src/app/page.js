@@ -27,12 +27,40 @@ function HomePage() {
 
   // const router = useRouter();
 
+  const searchParams = useSearchParams();
+  const storeId = searchParams.get("storeId");
+
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       const response = await fetch("/api/products");
+  //       const data = await response.json();
+  //       setProducts(data);
+  //     } catch (error) {
+  //       console.error("Error fetching products:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   fetchProducts();
+  // }, []);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("/api/products");
+
+        // ✅ If storeId is set → fetch store-specific products
+        // ❌ If not set → fetch all products
+        const url = storeId
+          ? `/api/products?storeId=${storeId}`
+          : `/api/products`;
+
+        const response = await fetch(url);
         const data = await response.json();
+
         setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -42,7 +70,7 @@ function HomePage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [storeId]);
 
   const addToCart = (product) => {
     // Get existing cart from memory or initialize empty array
