@@ -1,4 +1,7 @@
-import { prisma } from "../../../lib/prisma"; // Assuming Prisma client is initialized
+import { prisma } from "@/app/lib/prisma";
+
+// import { prisma } from "../../../lib/prisma"; // Assuming Prisma client is initialized
+
 
 export async function GET(request, { params }) {
   const { storeId } = params;

@@ -1,4 +1,6 @@
-import { prisma } from "../../lib/prisma"; // Assuming Prisma client is initialized
+// import { prisma } from "../../lib/prisma"; // Assuming Prisma client is initialized
+
+import { prisma } from '@/app/lib/prisma';
 import bcrypt from 'bcrypt';
 
 // POST create a new user

@@ -1,4 +1,6 @@
-import { prisma } from "../../../lib/prisma"; // Assuming Prisma client is initialized
+// import { prisma } from "../../../lib/prisma"; // Assuming Prisma client is initialized
+
+import { prisma } from "@/app/lib/prisma";
 import Razorpay from "razorpay";
 
 // import { prisma } from "@/lib/prisma";

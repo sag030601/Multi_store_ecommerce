@@ -1,5 +1,9 @@
 // import { prisma } from "../../lib/prisma";// Assume Prisma client is initialized
-import { prisma } from "../../lib/prisma"; // Assuming Prisma client is initialized
+
+import { prisma } from "@/app/lib/prisma";
+
+// import { prisma } from "../../lib/prisma"; // Assuming Prisma client is initialized
+
 
 // // GET product by id
 // export async function GET({ params }) {
