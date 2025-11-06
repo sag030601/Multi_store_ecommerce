@@ -3,16 +3,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { ShoppingCart, Trash2 } from "lucide-react";
+import { useStore } from "../context/page";
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-
+  const { storeId } = useStore();
   useEffect(() => {
     const fetchCart = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/cartItems/1");
+        const response = await axios.get("/api/cartItems/1"); // API route for user's cart
         setCartItems(response.data);
         calculateTotal(response.data);
       } catch (error) {
@@ -25,16 +26,16 @@ export default function CartPage() {
   }, []);
 
   const calculateTotal = (cartItems) => {
-    const total = cartItems.reduce(
+    const totalAmount = cartItems.reduce(
       (sum, item) => sum + item.product.price * item.quantity,
       0
     );
-    setTotal(total);
+    setTotal(totalAmount);
   };
 
   const handleRemoveItem = async (itemId) => {
     try {
-      await axios.delete(`http://localhost:3000/api/cartItems/${itemId}`);
+      await axios.delete(`/api/cartItems/${itemId}`);
       const updated = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updated);
       calculateTotal(updated);
@@ -43,8 +44,72 @@ export default function CartPage() {
     }
   };
 
-  const handleCheckout = () => {
-    console.log("Proceeding to checkout...");
+  // ✅ Razorpay Checkout Integration
+  const handleCheckout = async () => {
+    try {
+      // 1️⃣ Razorpay payment options
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: (total + 50) * 100, // amount in paise
+        currency: "INR",
+        name: "My E-Commerce Store",
+        description: "Purchase from My Store",
+        handler: async function (response) {
+          try {
+            // 2️⃣ Verify payment & create order in backend
+            const verifyRes = await axios.post("/api/verify-payment", {
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+              userId: 1, // replace with logged-in user ID
+              cartItems,
+              total: total + 50,
+              shippingAddress: {
+                addressLine1: "123 Street",
+                city: "City",
+                state: "State",
+                zip: "123456",
+              },
+              billingAddress: {
+                addressLine1: "123 Street",
+                city: "City",
+                state: "State",
+                zip: "123456",
+              },
+            });
+
+            if (verifyRes.data.success) {
+              alert("✅ Payment successful! Order placed.");
+              setCartItems([]);
+              setTotal(0);
+              window.location.href = "/thank-you";
+            } else {
+              alert("❌ Payment verification failed!");
+            }
+          } catch (err) {
+            console.error("Error verifying payment:", err);
+            alert("❌ Payment verification failed!");
+          }
+        },
+        prefill: {
+          name: "John Doe",
+          email: "john@example.com",
+          contact: "9999999999",
+        },
+        notes: {
+          address: "Customer Address",
+        },
+        theme: {
+          color: "#4f46e5",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Failed to initialize payment.");
+    }
   };
 
   if (loading) {
@@ -111,7 +176,9 @@ export default function CartPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <img
-                        src={item.productImage || "/images/product-placeholder.jpg"}
+                        src={
+                          item.productImage || "/images/product-placeholder.jpg"
+                        }
                         alt={item.productName}
                         className="w-20 h-20 rounded-lg object-cover"
                       />
@@ -145,7 +212,9 @@ export default function CartPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Order Summary</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
+                Order Summary
+              </h3>
               <div className="flex justify-between text-gray-600 mb-2">
                 <p>Subtotal</p>
                 <p>₹{total.toFixed(2)}</p>
@@ -173,7 +242,8 @@ export default function CartPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-6 mt-20">
         <div className="container mx-auto text-center text-sm">
-          &copy; {new Date().getFullYear()} My E-Commerce Store. All rights reserved.
+          &copy; {new Date().getFullYear()} My E-Commerce Store. All rights
+          reserved.
         </div>
       </footer>
     </div>
