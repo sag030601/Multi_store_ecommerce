@@ -1,18 +1,20 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "../context/page";
 
-export default function AddCategoryPage() {
+function CategoryForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { storeId, setStoreId, setCategoryId } = useStore(); // ✅ include setStoreId
+  const { storeId, setStoreId, setCategoryId } = useStore();
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [parentId, setParentId] = useState("");
   const [message, setMessage] = useState("");
 
-  // ✅ If storeId not set in context, get it from URL
+  // Get storeId from URL if not in context
   useEffect(() => {
     const idFromUrl = searchParams.get("storeId");
     if (!storeId && idFromUrl) {
@@ -31,7 +33,7 @@ export default function AddCategoryPage() {
     const categoryData = {
       name,
       description,
-      storeId: parseInt(storeId, 10), // ✅ Convert to number
+      storeId: parseInt(storeId, 10),
       parentId: parentId ? parseInt(parentId, 10) : null,
     };
 
@@ -45,11 +47,10 @@ export default function AddCategoryPage() {
       if (!response.ok) throw new Error("Failed to create category");
       const data = await response.json();
 
-      setCategoryId(data.id); // ✅ Save created category ID in context
+      setCategoryId(data.id);
       setMessage(`✅ Category created: ${data.name}`);
 
-      // Redirect to product creation page after success
-      setTimeout(() => router.push("/products/create"), 1000);
+      router.push("/products/create");
     } catch (error) {
       setMessage(`❌ Error: ${error.message}`);
     }
@@ -100,7 +101,15 @@ export default function AddCategoryPage() {
   );
 }
 
-// ✅ Styles
+// Wrap in Suspense to avoid CSR bailout warnings
+export default function AddCategoryPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <CategoryForm />
+    </Suspense>
+  );
+}
+
 const styles = {
   container: {
     display: "flex",
