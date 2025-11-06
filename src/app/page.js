@@ -13,6 +13,7 @@ import {
 // import Router  from "next/router";
 // import { useRouter } from 'next/router';
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 // Replace button with a Link component for a smoother transition
 
@@ -26,6 +27,7 @@ function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   // const router = useRouter();
+  
 
   const searchParams = useSearchParams();
   const storeId = searchParams.get("storeId");
@@ -55,7 +57,7 @@ function HomePage() {
         // ✅ If storeId is set → fetch store-specific products
         // ❌ If not set → fetch all products
         const url = storeId
-          ? `/api/products?storeId=${storeId}`
+          ? `/api/products/${storeId}`
           : `/api/products`;
 
         const response = await fetch(url);
