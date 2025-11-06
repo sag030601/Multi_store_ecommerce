@@ -14,6 +14,9 @@ import {
 // import { useRouter } from 'next/router';
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+
 
 // Replace button with a Link component for a smoother transition
 
@@ -237,30 +240,30 @@ function HomePage() {
           {/* Mobile Menu */}
           {isMenuOpen && (
             <nav className="md:hidden py-4 border-t">
-              <a
+              <Link
                 href="/"
                 className="block py-2 text-gray-700 hover:text-yellow-500 font-medium"
               >
                 Home
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/shop"
                 className="block py-2 text-gray-700 hover:text-yellow-500 font-medium"
               >
                 Shop
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/deals"
                 className="block py-2 text-gray-700 hover:text-yellow-500 font-medium"
               >
                 Deals
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="block py-2 text-gray-700 hover:text-yellow-500 font-medium"
               >
                 Contact
-              </a>
+              </Link>
             </nav>
           )}
         </div>
@@ -446,7 +449,7 @@ function HomePage() {
                 className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group"
               >
                 <div className="relative overflow-hidden">
-                  <img
+                  <Image
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
