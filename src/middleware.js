@@ -7,16 +7,21 @@ export async function middleware(req) {
 
   // Allow public routes
   if (
+    pathname.startsWith("/api/auth") ||
+    pathname.includes("/api/auth/callback") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
-    pathname.startsWith("/api/auth")
+    pathname.startsWith("/_next") ||
+    pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
   }
 
   // Protect other pages
   if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+     const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname); // optional
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
